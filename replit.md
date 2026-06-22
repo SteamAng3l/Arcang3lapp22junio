@@ -47,7 +47,7 @@ A Spanish-language web app where a person writes how they feel and receives a re
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- REGLA DE ORO: Código minimalista — sin comentarios, sin explicaciones, sin librerías externas, sin redundancias. Respuestas lo más cortas posible.
 
 ## Gotchas
 
