@@ -1,45 +1,26 @@
 import { useState } from "react";
-import { useGetVerse, useGetRandomVerse } from "@workspace/api-client-react";
+import { findVerse, randomVerse, type VerseResult } from "@/lib/verse-engine";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, RefreshCw, Send, Heart, HeartOff } from "lucide-react";
-import type { VerseResponse } from "@workspace/api-client-react";
+import { BookOpen, Send, Heart, HeartOff } from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
 export default function Home() {
   const [problem, setProblem] = useState("");
-  const [activeVerse, setActiveVerse] = useState<VerseResponse | null>(null);
+  const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
-
-  const getVerseMutation = useGetVerse();
-  const getRandomVerseQuery = useGetRandomVerse({
-    query: {
-      enabled: false,
-      queryKey: ["randomVerseClick"],
-    },
-  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!problem.trim()) return;
-    setActiveVerse(null);
-    getVerseMutation.mutate(
-      { data: { problem: problem.trim() } },
-      { onSuccess: (data) => setActiveVerse(data) }
-    );
+    setActiveVerse(findVerse(problem.trim()));
   };
 
-  const handleRandom = async () => {
-    setActiveVerse(null);
-    const result = await getRandomVerseQuery.refetch();
-    if (result.data) setActiveVerse(result.data);
+  const handleRandom = () => {
+    setActiveVerse(randomVerse());
   };
-
-  const isPending =
-    getVerseMutation.isPending || getRandomVerseQuery.isFetching;
 
   const toggleFavorite = () => {
     if (!activeVerse) return;
@@ -76,15 +57,11 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               type="submit"
-              disabled={isPending || !problem.trim()}
+              disabled={!problem.trim()}
               className="w-full sm:w-auto font-serif text-xl h-14 px-10 rounded-full"
               data-testid="button-submit-problem"
             >
-              {getVerseMutation.isPending ? (
-                <RefreshCw className="mr-2 h-5 w-5 animate-spin opacity-70" />
-              ) : (
-                <Send className="mr-2 h-5 w-5 opacity-70" />
-              )}
+              <Send className="mr-2 h-5 w-5 opacity-70" />
               Buscar versículo
             </Button>
 
@@ -94,34 +71,17 @@ export default function Home() {
               type="button"
               variant="outline"
               onClick={handleRandom}
-              disabled={isPending}
               className="w-full sm:w-auto font-serif text-xl h-14 px-10 rounded-full bg-transparent border-primary/20 hover:bg-primary/5 hover:text-primary"
               data-testid="button-random-verse"
             >
-              {getRandomVerseQuery.isFetching ? (
-                <RefreshCw className="mr-2 h-5 w-5 animate-spin opacity-70" />
-              ) : (
-                <BookOpen className="mr-2 h-5 w-5 opacity-70" />
-              )}
+              <BookOpen className="mr-2 h-5 w-5 opacity-70" />
               Versículo aleatorio
             </Button>
           </div>
         </form>
       </section>
 
-      {isPending && !activeVerse && (
-        <div className="flex flex-col items-center justify-center p-12 space-y-6 animate-pulse">
-          <Skeleton className="h-5 w-36 bg-primary/10 rounded-full" />
-          <Skeleton className="h-7 w-full max-w-md bg-primary/10" />
-          <div className="space-y-3 w-full max-w-lg mt-4">
-            <Skeleton className="h-9 w-full bg-primary/10" />
-            <Skeleton className="h-9 w-5/6 bg-primary/10" />
-            <Skeleton className="h-9 w-4/6 bg-primary/10" />
-          </div>
-        </div>
-      )}
-
-      {activeVerse && !isPending && (
+      {activeVerse && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <div className="text-center mb-8">
             <span
