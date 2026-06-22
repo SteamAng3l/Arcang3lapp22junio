@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial completo: app sencilla con versículos bíblicos sin copyright</title>
+  <meta name="description" content="Tutorial paso a paso para crear una aplicación sencilla donde una persona escribe un problema y recibe un versículo bíblico usando una Biblia de dominio público, con frontend, backend y base de datos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f7f1e8;
+      --bg-deep: #efe3d0;
+      --paper: rgba(255,255,255,0.62);
+      --paper-strong: rgba(255,255,255,0.78);
+      --ink: #231b16;
+      --muted: #6b5a4d;
+      --gold: #a9792b;
+      --gold-soft: #d8bb84;
+      --wine: #6d3b34;
+      --sage: #61715f;
+      --line: rgba(35,27,22,0.1);
+      --shadow: 0 20px 60px rgba(74, 48, 24, 0.12);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --max: 1220px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:"Manrope", sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(169,121,43,0.12), transparent 30%),
+        radial-gradient(circle at 80% 10%, rgba(109,59,52,0.10), transparent 28%),
+        linear-gradient(180deg, #fbf7f1 0%, var(--bg) 45%, var(--bg-deep) 100%);
+      line-height:1.6;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.22;
+      background-image:
+        linear-gradient(rgba(35,27,22,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(35,27,22,0.025) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.25));
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%}
+    code, pre{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+
+    .container{
+      width:min(calc(100% - 2rem), var(--max));
+      margin-inline:auto;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(28px);
+      transition:opacity .8s ease, transform .8s ease;
+    }
+    .reveal.visible{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .site-header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter: blur(14px);
+      background:rgba(247,241,232,0.72);
+      border-bottom:1px solid rgba(35,27,22,0.08);
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      min-height:78px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.9rem;
+      font-weight:800;
+      letter-spacing:.04em;
+    }
+
+    .brand-mark{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:
+        linear-gradient(145deg, rgba(169,121,43,0.22), rgba(109,59,52,0.16)),
+        rgba(255,255,255,0.45);
+      border:1px solid rgba(35,27,22,0.08);
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .brand-mark svg{width:24px;height:24px;fill:var(--wine)}
+
+    .nav-links{
+      display:flex;
+      gap:1rem;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .nav-links a{
+      font-size:.95rem;
+      color:var(--muted);
+      padding:.55rem .85rem;
+      border-radius:999px;
+      transition:all .25s ease;
+    }
+
+    .nav-links a:hover{
+      background:rgba(255,255,255,0.55);
+      color:var(--ink);
+      transform:translateY(-1px);
+    }
+
+    .hero{
+      padding: clamp(3rem, 6vw, 6rem) 0 2rem;
+      position:relative;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:2rem;
+      align-items:end;
+    }
+
+    .eyebrow{
+      text-transform:uppercase;
+      letter-spacing:.22em;
+      font-size:.78rem;
+      font-weight:800;
+      color:var(--gold);
+      margin-bottom:1rem;
+    }
+
+    h1,h2,h3{
+      font-family:"Cormorant Garamond", serif;
+      line-height:.95;
+      margin:0 0 1rem;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+
+    h1{
+      font-size:clamp(3.3rem, 9vw, 7.4rem);
+      max-width:10ch;
+    }
+
+    .hero p{
+      max-width:62ch;
+      color:var(--muted);
+      font-size:clamp(1rem, 1.5vw, 1.12rem);
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:1rem;
+      flex-wrap:wrap;
+      margin-top:1.7rem;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.65rem;
+      border:none;
+      cursor:pointer;
+      padding:1rem 1.3rem;
+      border-radius:999px;
+      font-weight:800;
+      transition:transform .22s ease, box-shadow .22s ease, background .22s ease, color .22s ease;
+      will-change:transform;
+    }
+
+    .btn:active{transform:translateY(1px) scale(.99)}
+    .btn-primary{
+      color:#fff;
+      background:linear-gradient(135deg, var(--wine), #8a554a);
+      box-shadow:0 18px 40px rgba(109,59,52,0.25);
+    }
+    .btn-primary:hover{
+      transform:translateY(-2px) scale(1.01);
+      box-shadow:0 24px 48px rgba(109,59,52,0.3);
+    }
+
+    .btn-secondary{
+      color:var(--ink);
+      background:rgba(255,255,255,0.58);
+      border:1px solid rgba(35,27,22,0.1);
+      backdrop-filter: blur(12px);
+    }
+    .btn-secondary:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,0.8);
+    }
+
+    .hero-panel{
+      border-radius:32px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.45));
+      border:1px solid rgba(35,27,22,0.08);
+      box-shadow: var(--shadow);
+      padding:1.2rem;
+      position:relative;
+      overflow:hidden;
+      min-height:420px;
+      display:grid;
+      align-content:space-between;
+    }
+
+    .hero-panel::before{
+      content:"";
+      position:absolute;
+      inset:auto -10% -20% auto;
+      width:260px;
+      height:260px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(169,121,43,0.22), transparent 65%);
+      filter:blur(14px);
+    }
+
+    .scripture-art{
+      border-radius:24px;
+      min-height:300px;
+      padding:1.2rem;
+      display:grid;
+      align-content:space-between;
+      background:
+        linear-gradient(145deg, rgba(97,113,95,0.14), rgba(169,121,43,0.1)),
+        linear-gradient(180deg, #fffefb, #f5ecdf);
+      border:1px solid rgba(35,27,22,0.08);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .scripture-art svg{
+      position:absolute;
+      right:-40px;
+      bottom:-20px;
+      width:260px;
+      height:260px;
+      opacity:.18;
+    }
+
+    .quote{
+      font-family:"Cormorant Garamond", serif;
+      font-size:clamp(1.6rem, 3vw, 2.4rem);
+      line-height:1.05;
+      max-width:14ch;
+    }
+
+    .quote-ref{
+      color:var(--muted);
+      font-size:.95rem;
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+
+    .meta-strip{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:1rem;
+      margin-top:1rem;
+    }
+
+    .meta-item{
+      padding:1rem;
+      border-radius:18px;
+      background:rgba(255,255,255,0.5);
+      border:1px solid rgba(35,27,22,0.08);
+    }
+
+    .meta-item strong{
+      display:block;
+      font-size:1.15rem;
+      margin-bottom:.25rem;
+    }
+
+    section{
+      padding: clamp(3rem, 7vw, 6rem) 0;
+    }
+
+    .section-head{
+      display:grid;
+      grid-template-columns: .8fr 1.2fr;
+      gap:2rem;
+      align-items:end;
+      margin-bottom:2rem;
+    }
+
+    .section-head h2{
+      font-size:clamp(2.4rem, 5vw, 4.5rem);
+      max-width:9ch;
+    }
+
+    .section-head p{
+      color:var(--muted);
+      max-width:62ch;
+    }
+
+    .altar{
+      display:grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap:1.2rem;
+      align-items:stretch;
+    }
+
+    .panel{
+      background:var(--paper);
+      border:1px solid rgba(35,27,22,0.08);
+      box-shadow: var(--shadow);
+      border-radius:var(--radius);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel-inner{
+      padding:1.35rem;
+    }
+
+    .steps{
+      display:grid;
+      gap:1rem;
+    }
+
+    .step{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:1rem;
+      align-items:start;
+      padding:1rem 0;
+      border-bottom:1px solid var(--line);
+    }
+    .step:last-child{border-bottom:none}
+
+    .step-num{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:#fff;
+      background:linear-gradient(135deg, var(--gold), #b88d43);
+      box-shadow:0 10px 24px rgba(169,121,43,0.22);
+      flex-shrink:0;
+    }
+
+    .step h3{
+      font-size:1.65rem;
+      margin-bottom:.35rem;
+    }
+
+    .step p{margin:0;color:var(--muted)}
+
+    .diagram{
+      min-height:100%;
+      padding:1.4rem;
+      display:grid;
+      gap:1rem;
+      align-content:center;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(169,121,43,0.13), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.55));
+      border-radius:var(--radius);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .flow{
+      display:grid;
+      gap:.9rem;
+    }
+
+    .flow-box{
+      padding:1rem 1.1rem;
+      border-radius:20px;
+      background:var(--paper-strong);
+      border:1px solid rgba(35,27,22,0.08);
+      font-weight:700;
+      position:relative;
+    }
+
+    .flow-arrow{
+      width:2px;
+      height:28px;
+      background:linear-gradient(var(--gold), transparent);
+      margin-left:22px;
+    }
+
+    .stack{
+      display:grid;
+      gap:1rem;
+    }
+
+    .stack-block{
+      padding:1.2rem;
+      border-left:4px solid var(--gold);
+      background:rgba(255,255,255,0.56);
+      border-radius:0 18px 18px 0;
+    }
+
+    .stack-block strong{
+      display:block;
+      margin-bottom:.35rem;
+      font-size:1.05rem;
+    }
+
+    .files{
+      display:grid;
+      gap:1.2rem;
+    }
+
+    .file-block{
+      overflow:hidden;
+      border-radius:22px;
+      border:1px solid rgba(35,27,22,0.08);
+      background:rgba(255,255,255,0.58);
+      box-shadow: var(--shadow);
+    }
+
+    .file-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding:1rem 1.2rem;
+      border-bottom:1px solid rgba(35,27,22,0.08);
+      background:linear-gradient(180deg, rgba(255,255,255,0.74), rgba(255,255,255,0.5));
+    }
+
+    .file-head strong{
+      font-size:1rem;
+      letter-spacing:.02em;
+    }
+
+    .copy-btn{
+      border:none;
+      background:rgba(109,59,52,0.1);
+      color:var(--wine);
+      padding:.6rem .9rem;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:800;
+      transition:all .2s ease;
+    }
+
+    .copy-btn:hover{
+      background:rgba(109,59,52,0.18);
+      transform:translateY(-1px);
+    }
+
+    pre{
+      margin:0;
+      padding:1.2rem;
+      overflow:auto;
+      font-size:.92rem;
+      line-height:1.55;
+      background:
+        linear-gradient(180deg, rgba(35,27,22,0.98), rgba(28,21,18,0.98));
+      color:#f4eadc;
+    }
+
+    .note{
+      padding:1.1rem 1.2rem;
+      border-radius:20px;
+      border:1px solid rgba(169,121,43,0.22);
+      background:rgba(216,187,132,0.12);
+      color:#5c4832;
+    }
+
+    .columns{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:1.2rem;
+    }
+
+    .faq{
+      display:grid;
+      gap:1rem;
+    }
+
+    details{
+      background:rgba(255,255,255,0.56);
+      border:1px solid rgba(35,27,22,0.08);
+      border-radius:18px;
+      padding:1rem 1.1rem;
+    }
+
+    summary{
+      cursor:pointer;
+      font-weight:800;
+      list-style:none;
+    }
+
+    summary::-webkit-details-marker{display:none}
+    details p{color:var(--muted); margin:.8rem 0 0}
+
+    .footer{
+      padding:2rem 0 4rem;
+      color:var(--muted);
+    }
+
+    .footer-box{
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+      padding-top:1.2rem;
+      border-top:1px solid rgba(35,27,22,0.08);
+    }
+
+    .stagger-1{animation:fadeUp .8s ease .05s both}
+    .stagger-2{animation:fadeUp .8s ease .18s both}
+    .stagger-3{animation:fadeUp .8s ease .31s both}
+    .stagger-4{animation:fadeUp .8s ease .44s both}
+
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(26px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @media (max-width: 980px){
+      .hero-grid,
+      .section-head,
+      .altar,
+      .columns{
+        grid-template-columns:1fr;
+      }
+      h1{max-width:12ch}
+      .meta-strip{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 680px){
+      .nav{align-items:flex-start; padding:1rem 0}
+      .nav-links{gap:.4rem}
+      .btn{width:100%}
+      .hero-actions{flex-direction:column}
+      .file-head{flex-direction:column; align-items:flex-start}
+      .step{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#inicio" class="brand" aria-label="Ir al inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 3h9a3 3 0 0 1 3 3v13.5a.5.5 0 0 1-.8.4A4.98 4.98 0 0 0 14 19H6a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Zm0 2a1 1 0 0 0-1 1v11.17A3.96 3.96 0 0 1 6 17h8a3 3 0 0 1 2 .76V6a1 1 0 0 0-1-1H6Zm2 3h6v2H8V8Zm0 4h6v2H8v-2Z"/>
+          </svg>
+        </span>
+        <span>Guía de app bíblica</span>
+      </a>
+      <nav class="nav-links" aria-label="Navegación principal">
+        <a href="#resumen">Resumen</a>
+        <a href="#pasos">Pasos</a>
+        <a href="#archivos">Archivos</a>
+        <a href="#base-datos">Base de datos</a>
+        <a href="#backend">Backend</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow stagger-1">tutorial completo para principiantes</div>
+          <h1 class="stagger-2">Crea una app que responde con un versículo bíblico</h1>
+          <p class="stagger-3">
+            Vas a aprender, paso por paso y sin saber programar, cómo construir una aplicación muy sencilla donde una persona escribe su problema, pulsa un botón y recibe una respuesta con un versículo de la Biblia relacionado con su situación. Incluyo frontend, backend, base de datos y una Biblia de dominio público.
+          </p>
+          <div class="hero-actions stagger-4">
+            <a class="btn btn-primary" href="#archivos">Ver todos los archivos</a>
+            <a class="btn btn-secondary" href="#pasos">Empezar el tutorial</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel stagger-3" aria-label="Ejemplo visual de la app">
+          <div class="scripture-art">
+            <div class="quote">
+              “Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.”
+            </div>
+            <div class="quote-ref">Mateo 11:28 · Reina-Valera 1909 / dominio público</div>
+            <svg viewBox="0 0 200 200" aria-hidden="true">
+              <path d="M109 24c-18 17-21 46-4 64 10 11 26 15 40 12-6 18-2 39 13 52 20 18 52 16 69-6 17-22 12-53-11-69-14-10-31-11-46-6 5-17 1-37-13-50-18-17-31-15-48 3Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="meta-strip">
+            <div class="meta-item">
+              <strong>Sin copyright</strong>
+              Biblia de dominio público.
+            </div>
+            <div class="meta-item">
+              <strong>Fácil</strong>
+              HTML + Node.js + SQLite.
+            </div>
+            <div class="meta-item">
+              <strong>Editable</strong>
+              Puedes cambiar categorías y respuestas.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="resumen">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Qué vas a construir</h2>
+          <p>
+            Una mini aplicación web con un formulario. La persona escribe algo como <em>“tengo ansiedad”</em>, <em>“me siento solo”</em> o <em>“necesito esperanza”</em>. El sistema envía ese texto al backend, el backend busca una categoría parecida en una base de datos y devuelve un versículo bíblico apropiado junto con un mensaje breve.
+          </p>
+        </div>
+
+        <div class="altar">
+          <div class="panel reveal">
+            <div class="panel-inner">
+              <div class="steps">
+                <article class="step">
+                  <div class="step-num">1</div>
+                  <div>
+                    <h3>Frontend</h3>
+                    <p>Una página sencilla con caja de texto, botón y área de respuesta.</p>
+                  </div>
+                </article>
+                <article class="step">
+                  <div class="step-num">2</div>
+                  <div>
+                    <h3>Backend</h3>
+                    <p>Un servidor en Node.js que recibe el problema y busca una respuesta en la base de datos.</p>
+                  </div>
+                </article>
+                <article class="step">
+                  <div class="step-num">3</div>
+                  <div>
+                    <h3>Base de datos</h3>
+                    <p>Una base SQLite con categorías como ansiedad, miedo, tristeza, perdón, esperanza y más.</p>
+                  </div>
+                </article>
+                <article class="step">
+                  <div class="step-num">4</div>
+                  <div>
+                    <h3>Biblia sin copyright</h3>
+                    <p>Usaremos versículos de la Reina-Valera 1909, una traducción considerada de dominio público.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <div class="diagram reveal">
+            <div class="flow">
+              <div class="flow-box">Usuario escribe: “tengo mucho miedo”</div>
+              <div class="flow-arrow"></div>
+              <div class="flow-box">El backend analiza palabras clave</div>
+              <div class="flow-arrow"></div>
+              <div class="flow-box">Busca en SQLite la categoría “miedo”</div>
+              <div class="flow-arrow"></div>
+              <div class="flow-box">Devuelve versículo + consejo breve</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pasos">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Antes de empezar</h2>
+          <p>
+            Este tutorial está hecho para alguien que no sabe programar. Solo necesitarás instalar un editor de texto y Node.js. Te voy a dejar todos los archivos listos para copiar y pegar.
+          </p>
+        </div>
+
+        <div class="columns">
+          <div class="panel reveal">
+            <div class="panel-inner stack">
+              <div class="stack-block">
+                <strong>1. Instala Visual Studio Code</strong>
+                Ve a la web oficial de VS Code e instálalo. Será el programa donde pegarás los archivos.
+              </div>
+              <div class="stack-block">
+                <strong>2. Instala Node.js</strong>
+                Descarga la versión LTS desde la web oficial de Node.js. Esto permite ejecutar el backend.
+              </div>
+              <div class="stack-block">
+                <strong>3. Crea una carpeta del proyecto</strong>
+                Por ejemplo: <code>app-versiculos</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel reveal">
+            <div class="panel-inner">
+              <div class="note">
+                <strong>Importante sobre la Biblia sin copyright:</strong><br>
+                Para evitar problemas legales, este ejemplo usa referencias y versículos inspirados en la <strong>Reina-Valera 1909</strong>, que generalmente se considera de <strong>dominio público</strong>. Aun así, si vas a publicar comercialmente la app, verifica la situación legal final en tu país.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="estructura">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Estructura de carpetas</h2>
+          <p>Dentro de tu carpeta <code>app-versiculos</code>, crea esta estructura exactamente así:</p>
+        </div>
+
+        <div class="file-block reveal">
+          <div class="file-head">
+            <strong>Estructura del proyecto</strong>
+            <button class="copy-btn" data-copy="estructura">Copiar</button>
+          </div>
+          <pre id="estructura">app-versiculos/
+├── public/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+├── database/
+│   ├── init.sql
+│   └── seed.js
+├── .env
+├── package.json
+└── server.js</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="archivos">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Todos los archivos listos</h2>
+          <p>
+            Ahora sí: copia y pega cada archivo en tu proyecto. Después te explico cómo ejecutarlo. He hecho la app lo más simple posible para que puedas entenderla y modificarla.
+          </p>
+        </div>
+
+        <div class="files">
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>package.json</strong>
+              <button class="copy-btn" data-copy="packagejson">Copiar</button>
+            </div>
+            <pre id="packagejson">{
+  "name": "app-versiculos",
+  "version": "1.0.0",
+  "description": "Aplicación sencilla que sugiere versículos bíblicos según el problema del usuario",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node database/seed.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  }
+}</pre>
+          </div>
+
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>.env</strong>
+              <button class="copy-btn" data-copy="dotenv">Copiar</button>
+            </div>
+            <pre id="dotenv">PORT=3000
+DB_PATH=./database/bible_app.db</pre>
+          </div>
+
+          <div class="file-block reveal" id="backend">
+            <div class="file-head">
+              <strong>server.js</strong>
+              <button class="copy-btn" data-copy="serverjs">Copiar</button>
+            </div>
+            <pre id="serverjs">require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const DB_PATH = process.env.DB_PATH || "./database/bible_app.db";
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+const db = new sqlite3.Database(DB_PATH, (err) => {
+  if (err) {
+    console.error("Error abriendo la base de datos:", err.message);
+  } else {
+    console.log("Base de datos conectada.");
+  }
+});
+
+const categories = [
+  {
+    name: "ansiedad",
+    keywords: ["ansiedad", "angustia", "estres", "estrés", "preocupacion", "preocupación", "nervios", "agobio"]
+  },
+  {
+    name: "miedo",
+    keywords: ["miedo", "temor", "terror", "inseguridad", "asustado", "asustada"]
+  },
+  {
+    name: "tristeza",
+    keywords: ["triste", "tristeza", "dolor", "llanto", "depresion", "depresión", "desanimo", "desánimo"]
+  },
+  {
+    name: "soledad",
+    keywords: ["solo", "sola", "soledad", "abandono", "rechazo"]
+  },
+  {
+    name: "perdon",
+    keywords: ["perdon", "perdón", "culpa", "pecado", "fallé", "falle", "arrepentimiento"]
+  },
+  {
+    name: "esperanza",
+    keywords: ["esperanza", "futuro", "sin salida", "desesperado", "desesperada", "rendirme"]
+  },
+  {
+    name: "fortaleza",
+    keywords: ["debil", "débil", "cansado", "cansada", "fuerza", "fortaleza", "batalla"]
+  },
+  {
+    name: "sabiduria",
+    keywords: ["decision", "decisión", "guia", "guía", "sabiduria", "sabiduría", "camino"]
+  }
+];
+
+function detectCategory(text) {
+  const normalized = text.toLowerCase();
+  for (const category of categories) {
+    for (const keyword of category.keywords) {
+      if (normalized.includes(keyword)) {
+        return category.name;
+      }
+    }
+  }
+  return "esperanza";
+}
+
+function getResponseMessage(category) {
+  const messages = {
+    ansiedad: "Dios invita a dejar la ansiedad en sus manos. Respira, ora y descansa en su cuidado.",
+    miedo: "Cuando hay miedo, la Biblia recuerda que Dios acompaña y fortalece.",
+    tristeza: "En medio de la tristeza, Dios permanece cerca del corazón quebrantado.",
+    soledad: "Aunque te sientas solo o sola, Dios no abandona a quienes le buscan.",
+    perdon: "Hay perdón y restauración para quien se acerca a Dios con sinceridad.",
+    esperanza: "Aun cuando parece que no hay salida, Dios sigue siendo fuente de esperanza.",
+    fortaleza: "Cuando tus fuerzas se acaban, Dios puede sostenerte y renovarte.",
+    sabiduria: "Dios puede dar dirección y sabiduría cuando no sabes qué hacer."
+  };
+
+  return messages[category] || messages.esperanza;
+}
+
+app.post("/api/verse", (req, res) => {
+  const { problem } = req.body;
+
+  if (!problem || problem.trim() === "") {
+    return res.status(400).json({
+      error: "Por favor escribe un problema o situación."
+    });
+  }
+
+  const category = detectCategory(problem);
+
+  db.get(
+    "SELECT category, verse_reference, verse_text FROM verses WHERE category = ? ORDER BY RANDOM() LIMIT 1",
+    [category],
+    (err, row) => {
+      if (err) {
+        console.error("Error consultando la base de datos:", err.message);
+        return res.status(500).json({ error: "Error interno del servidor." });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: "No se encontró un versículo para esa categoría." });
+      }
+
+      return res.json({
+        detected_category: row.category,
+        message: getResponseMessage(row.category),
+        verse_reference: row.verse_reference,
+        verse_text: row.verse_text
+      });
+    }
+  );
+});
+
+app.get("/api/categories", (req, res) => {
+  db.all("SELECT DISTINCT category FROM verses ORDER BY category ASC", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: "No se pudieron obtener las categorías." });
+    }
+    res.json(rows);
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor funcionando en http://localhost:${PORT}`);
+});</pre>
+          </div>
+
+          <div class="file-block reveal" id="base-datos">
+            <div class="file-head">
+              <strong>database/init.sql</strong>
+              <button class="copy-btn" data-copy="initsql">Copiar</button>
+            </div>
+            <pre id="initsql">CREATE TABLE IF NOT EXISTS verses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category TEXT NOT NULL,
+  verse_reference TEXT NOT NULL,
+  verse_text TEXT NOT NULL
+);</pre>
+          </div>
+
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>database/seed.js</strong>
+              <button class="copy-btn" data-copy="seedjs">Copiar</button>
+            </div>
+            <pre id="seedjs">require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
+
+const DB_PATH = process.env.DB_PATH || "./database/bible_app.db";
+const SQL_PATH = path.join(__dirname, "init.sql");
+
+const db = new sqlite3.Database(DB_PATH);
+
+const verses = [
+  {
+    category: "ansiedad",
+    verse_reference: "Filipenses 4:6-7",
+    verse_text: "Por nada estéis afanosos; sino sean notorias vuestras peticiones delante de Dios en toda oración y ruego, con hacimiento de gracias. Y la paz de Dios, que sobrepuja todo entendimiento, guardará vuestros corazones y vuestros entendimientos en Cristo Jesús."
+  },
+  {
+    category: "ansiedad",
+    verse_reference: "1 Pedro 5:7",
+    verse_text: "Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros."
+  },
+  {
+    category: "miedo",
+    verse_reference: "Isaías 41:10",
+    verse_text: "No temas, que yo soy contigo; no desmayes, que yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia."
+  },
+  {
+    category: "miedo",
+    verse_reference: "Salmo 56:3",
+    verse_text: "En el día que temo, yo en ti confío."
+  },
+  {
+    category: "tristeza",
+    verse_reference: "Salmo 34:18",
+    verse_text: "Cercano está Jehová a los quebrantados de corazón; y salvará a los contritos de espíritu."
+  },
+  {
+    category: "tristeza",
+    verse_reference: "Juan 16:33",
+    verse_text: "En el mundo tendréis aflicción: mas confiad, yo he vencido al mundo."
+  },
+  {
+    category: "soledad",
+    verse_reference: "Hebreos 13:5",
+    verse_text: "No te desampararé, ni te dejaré."
+  },
+  {
+    category: "soledad",
+    verse_reference: "Salmo 27:10",
+    verse_text: "Aunque mi padre y mi madre me dejaran, con todo, Jehová me recogerá."
+  },
+  {
+    category: "perdon",
+    verse_reference: "1 Juan 1:9",
+    verse_text: "Si confesamos nuestros pecados, él es fiel y justo para que nos perdone nuestros pecados, y nos limpie de toda maldad."
+  },
+  {
+    category: "perdon",
+    verse_reference: "Salmo 103:12",
+    verse_text: "Cuanto está lejos el oriente del occidente, hizo alejar de nosotros nuestras rebeliones."
+  },
+  {
+    category: "esperanza",
+    verse_reference: "Jeremías 29:11",
+    verse_text: "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis."
+  },
+  {
+    category: "esperanza",
+    verse_reference: "Romanos 15:13",
+    verse_text: "Y el Dios de esperanza os llene de todo gozo y paz creyendo, para que abundéis en esperanza por la virtud del Espíritu Santo."
+  },
+  {
+    category: "fortaleza",
+    verse_reference: "Mateo 11:28",
+    verse_text: "Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar."
+  },
+  {
+    category: "fortaleza",
+    verse_reference: "Isaías 40:31",
+    verse_text: "Mas los que esperan a Jehová tendrán nuevas fuerzas; levantarán las alas como águilas; correrán, y no se cansarán; caminarán, y no se fatigarán."
+  },
+  {
+    category: "sabiduria",
+    verse_reference: "Santiago 1:5",
+    verse_text: "Y si alguno de vosotros tiene falta de sabiduría, demándela a Dios, el cual da a todos abundantemente, y no zahiere; y le será dada."
+  },
+  {
+    category: "sabiduria",
+    verse_reference: "Proverbios 3:5-6",
+    verse_text: "Fíate de Jehová de todo tu corazón, y no estribes en tu prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas."
+  }
+];
+
+const initSQL = fs.readFileSync(SQL_PATH, "utf8");
+
+db.serialize(() => {
+  db.exec(initSQL);
+
+  db.run("DELETE FROM verses");
+
+  const stmt = db.prepare(
+    "INSERT INTO verses (category, verse_reference, verse_text) VALUES (?, ?, ?)"
+  );
+
+  verses.forEach((verse) => {
+    stmt.run(verse.category, verse.verse_reference, verse.verse_text);
+  });
+
+  stmt.finalize();
+});
+
+db.close(() => {
+  console.log("Base de datos creada y datos insertados correctamente.");
+});</pre>
+          </div>
+
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>public/index.html</strong>
+              <button class="copy-btn" data-copy="publicindex">Copiar</button>
+            </div>
+            <pre id="publicindex">&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8" /&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+  &lt;title&gt;App de versículos bíblicos&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css" /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="app"&gt;
+    &lt;section class="box"&gt;
+      &lt;h1&gt;Encuentra un versículo para tu situación&lt;/h1&gt;
+      &lt;p&gt;Escribe tu problema o cómo te sientes, y recibirás un versículo bíblico de apoyo.&lt;/p&gt;
+
+      &lt;textarea id="problem" placeholder="Ejemplo: tengo ansiedad y miedo por el futuro"&gt;&lt;/textarea&gt;
+      &lt;button id="sendBtn"&gt;Buscar versículo&lt;/button&gt;
+
+      &lt;div id="result" class="result hidden"&gt;
+        &lt;p class="label"&gt;Respuesta:&lt;/p&gt;
+        &lt;p id="message"&gt;&lt;/p&gt;
+        &lt;blockquote id="verseText"&gt;&lt;/blockquote&gt;
+        &lt;p id="verseReference" class="reference"&gt;&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/main&gt;
+
+  &lt;script src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+          </div>
+
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>public/style.css</strong>
+              <button class="copy-btn" data-copy="publicstyle">Copiar</button>
+            </div>
+            <pre id="publicstyle">body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: #f7f1e3;
+  color: #2d2a26;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.box {
+  width: 100%;
+  max-width: 720px;
+  background: white;
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+h1 {
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.6;
+}
+
+textarea {
+  width: 100%;
+  min-height: 130px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #d6c9b4;
+  resize: vertical;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 16px;
+  background: #7a5c3e;
+  color: white;
+  border: none;
+  padding: 14px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #5e442c;
+}
+
+.result {
+  margin-top: 24px;
+  padding: 20px;
+  background: #f8f3ea;
+  border-radius: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+.label {
+  font-weight: bold;
+}
+
+blockquote {
+  margin: 12px 0;
+  padding-left: 16px;
+  border-left: 4px solid #b9965a;
+}
+
+.reference {
+  font-weight: bold;
+}</pre>
+          </div>
+
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>public/script.js</strong>
+              <button class="copy-btn" data-copy="publicscript">Copiar</button>
+            </div>
+            <pre id="publicscript">const problemInput = document.getElementById("problem");
+const sendBtn = document.getElementById("sendBtn");
+const resultBox = document.getElementById("result");
+const messageEl = document.getElementById("message");
+const verseTextEl = document.getElementById("verseText");
+const verseReferenceEl = document.getElementById("verseReference");
+
+sendBtn.addEventListener("click", async () => {
+  const problem = problemInput.value.trim();
+
+  if (!problem) {
+    alert("Por favor escribe tu problema.");
+    return;
+  }
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Buscando...";
+
+  try {
+    const response = await fetch("/api/verse", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ problem })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Ocurrió un error.");
+    }
+
+    messageEl.textContent = data.message;
+    verseTextEl.textContent = data.verse_text;
+    verseReferenceEl.textContent = data.verse_reference;
+    resultBox.classList.remove("hidden");
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Buscar versículo";
+  }
+});</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="instalacion">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Cómo instalar y ejecutar</h2>
+          <p>Una vez que hayas creado todos los archivos, abre la terminal dentro de tu carpeta del proyecto y ejecuta estos comandos.</p>
+        </div>
+
+        <div class="files">
+          <div class="file-block reveal">
+            <div class="file-head">
+              <strong>Comandos de instalación</strong>
+              <button class="copy-btn" data-copy="comandos">Copiar</button>
+            </div>
+            <pre id="comandos">npm install
+npm run seed
+npm start</pre>
+          </div>
+        </div>
+
+        <div class="columns" style="margin-top:1.2rem">
+          <div class="panel reveal">
+            <div class="panel-inner stack">
+              <div class="stack-block">
+                <strong>npm install</strong>
+                Instala las dependencias del proyecto.
+              </div>
+              <div class="stack-block">
+                <strong>npm run seed</strong>
+                Crea la base de datos SQLite y mete los versículos iniciales.
+              </div>
+              <div class="stack-block">
+                <strong>npm start</strong>
+                Inicia el servidor en <code>http://localhost:3000</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel reveal">
+            <div class="panel-inner">
+              <div class="note">
+                Cuando el servidor arranque, abre tu navegador y entra en:
+                <br><br>
+                <strong>http://localhost:3000</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Cómo funciona por dentro</h2>
+          <p>Te lo explico de forma simple, sin tecnicismos innecesarios.</p>
+        </div>
+
+        <div class="altar">
+          <div class="panel reveal">
+            <div class="panel-inner stack">
+              <div class="stack-block">
+                <strong>El usuario escribe un problema</strong>
+                Por ejemplo: “Tengo miedo por mi futuro y me siento solo”.
+              </div>
+              <div class="stack-block">
+                <strong>JavaScript envía ese texto al backend</strong>
+                El archivo <code>public/script.js</code> hace una petición a <code>/api/verse</code>.
+              </div>
+              <div class="stack-block">
+                <strong>El backend detecta la categoría</strong>
+                Si encuentra palabras como “miedo”, “temor” o “asustado”, decide que la categoría es <code>miedo</code>.
+              </div>
+              <div class="stack-block">
+                <strong>Busca un versículo</strong>
+                En SQLite el backend elige un versículo aleatorio de esa categoría.
+              </div>
+              <div class="stack-block">
+                <strong>Devuelve la respuesta</strong>
+                El frontend muestra el mensaje y el versículo al usuario.
+              </div>
+            </div>
+          </div>
+
+          <div class="panel reveal">
+            <div class="panel-inner">
+              <div class="note">
+                <strong>Esto no es una IA real compleja.</strong><br>
+                Es una app sencilla basada en <strong>palabras clave</strong>. Eso es ideal para empezar sin complicarte. Más adelante, si quieres, puedes conectar OpenAI o cualquier otro modelo para mejorar la detección del problema.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="mejoras">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Mejoras que puedes agregar después</h2>
+          <p>Una vez que esta versión funcione, puedes hacerla más útil y más bonita.</p>
+        </div>
+
+        <div class="columns">
+          <div class="panel reveal">
+            <div class="panel-inner stack">
+              <div class="stack-block">
+                <strong>Agregar más categorías</strong>
+                Ejemplo: matrimonio, duelo, trabajo, tentación, gratitud, oración.
+              </div>
+              <div class="stack-block">
+                <strong>Guardar historial</strong>
+                Puedes registrar qué problemas se consultan más.
+              </div>
+              <div class="stack-block">
+                <strong>Panel administrador</strong>
+                Para añadir versículos sin tocar el código.
+              </div>
+            </div>
+          </div>
+
+          <div class="panel reveal">
+            <div class="panel-inner stack">
+              <div class="stack-block">
+                <strong>Chat visual</strong>
+                Mostrar la conversación como si fuera un chatbot real.
+              </div>
+              <div class="stack-block">
+                <strong>Oraciones sugeridas</strong>
+                Junto con el versículo, mostrar una oración corta.
+              </div>
+              <div class="stack-block">
+                <strong>Integrar IA</strong>
+                Para entender mejor frases complejas escritas por el usuario.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Preguntas frecuentes</h2>
+          <p>Estas son las dudas más comunes si nunca has programado.</p>
+        </div>
+
+        <div class="faq">
+          <details class="reveal">
+            <summary>¿Necesito saber programar para usar este tutorial?</summary>
+            <p>No. Está pensado para copiar y pegar. Aun así, conviene leer cada parte para entender qué hace.</p>
+          </details>
+
+          <details class="reveal">
+            <summary>¿La Biblia que usas tiene copyright?</summary>
+            <p>Este ejemplo se apoya en la Reina-Valera 1909, normalmente tratada como dominio público. Si tu proyecto será público o comercial, revisa la situación legal específica en tu país.</p>
+          </details>
+
+          <details class="reveal">
+            <summary>¿Esto es un chatbot con inteligencia artificial real?</summary>
+            <p>No exactamente. En esta versión es un sistema simple que detecta palabras clave y responde con versículos. Es más estable, barato y fácil para empezar.</p>
+          </details>
+
+          <details class="reveal">
+            <summary>¿Puedo subir esto a internet?</summary>
+            <p>Sí. Más adelante podrías subirlo a Render, Railway o un VPS. Primero asegúrate de que funcione localmente en tu computadora.</p>
+          </details>
+
+          <details class="reveal">
+            <summary>¿Puedo usar MySQL o PostgreSQL en vez de SQLite?</summary>
+            <p>Sí, pero SQLite es mucho más simple para principiantes porque no requiere instalar un servidor de base de datos separado.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="final">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Recomendación importante</h2>
+          <p>
+            Si esta app va a tratar temas delicados como depresión severa, pensamientos autolesivos o crisis emocionales profundas, conviene añadir un mensaje responsable indicando que la app no reemplaza ayuda pastoral, psicológica o médica profesional.
+          </p>
+        </div>
+
+        <div class="panel reveal">
+          <div class="panel-inner">
+            <div class="note">
+              <strong>Texto sugerido:</strong><br>
+              “Esta aplicación ofrece orientación espiritual basada en la Biblia, pero no reemplaza ayuda profesional médica, psicológica o pastoral. Si estás en una crisis grave, busca apoyo inmediato de una persona de confianza o un profesional.”
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-box">
+      <div>Hecho como guía práctica para principiantes.</div>
+      <div>Puedes copiar los archivos y empezar hoy mismo.</div>
+    </div>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-copy');
+        const target = document.getElementById(id);
+        if(!target) return;
+
+        try{
+          await navigator.clipboard.writeText(target.textContent);
+          const old = btn.textContent;
+          btn.textContent = 'Copiado';
+          setTimeout(() => btn.textContent = old, 1400);
+        }catch(e){
+          btn.textContent = 'No se pudo copiar';
+          setTimeout(() => btn.textContent = 'Copiar', 1400);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

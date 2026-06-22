@@ -1,0 +1,20 @@
+Hola, me gustaría que me ayudes a implementar los siguientes cambios en la aplicación "Arcángel" que ya está funcionando:
+
+Renombrar la aplicación
+Cambia todos los textos y referencias para que la app se llame "Arcángel". Quiero que el usuario sienta que está hablando con un guía espiritual o un ángel. Por ejemplo, el mensaje de bienvenida podría ser:
+"Soy Arcángel, estoy aquí para ayudarte a encontrar paz en la Palabra. ¿Qué hay en tu corazón hoy?"
+Función de Favoritos
+Agrega un botón "Guardar en Favoritos" junto a cada versículo que se muestre. Los usuarios deben poder guardar sus versículos preferidos y consultarlos en una sección especial llamada "Mis Favoritos". Esta función debe ser simple y fácil de usar.
+Monetización no invasiva
+Integra un banner pequeño y discreto para anuncios de Google (Google AdSense o AdMob) en la parte inferior de la pantalla, sin interferir con la experiencia de lectura.
+Añade un botón o enlace visible para donaciones, que dirija a plataformas como PayPal o Buy Me a Coffee, para que los usuarios puedan apoyar el proyecto si lo desean.
+Funcionalidad offline
+Asegúrate de que toda la información necesaria (versículos, base de datos) se almacene localmente para que la app funcione sin conexión a internet después de la primera carga o instalación.
+Adaptación para personas de la tercera edad
+Usa tipografía más grande y clara, con buen contraste para facilitar la lectura.
+Botones grandes y fáciles de presionar.
+Interfaz simple y minimalista, con pocas opciones visibles para no confundir al usuario.
+Evita menús complejos o gestos difíciles.
+Expansión de la base de datos bíblica
+Me gustaría que la app pueda manejar una base de datos más completa de la Biblia Reina-Valera 1909 (dominio público), para ofrecer más versículos relacionados con las categorías emocionales. Si es posible, adapta el backend para consultar esta base de datos más amplia sin perder eficiencia.
+Por favor, mantén la estructura actual de la aplicación y el estilo visual, pero integra estas mejoras para hacerla más accesible, funcional y sostenible.
