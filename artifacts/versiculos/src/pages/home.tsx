@@ -98,7 +98,7 @@ export default function Home() {
             </p>
           </div>
 
-          <Card className="cuadro bg-gradient-to-b from-card to-background border-primary/20 shadow-md relative overflow-hidden">
+          <Card className="cuadro border-primary/20 shadow-md relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <CardContent className="p-8 md:p-12 text-center">
               <p
