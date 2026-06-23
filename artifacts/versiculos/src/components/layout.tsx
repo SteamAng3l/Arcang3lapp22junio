@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Heart } from "lucide-react";
+import { Heart, Share2 } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [showRedes, setShowRedes] = useState(false);
 
   const navLink = (href: string, label: string) => {
     const active = location === href;
@@ -41,6 +43,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <footer className="mt-16 pt-6 border-t border-border/40 text-center space-y-5">
+        <button
+          onClick={() => setShowRedes(!showRedes)}
+          className="cuadro inline-flex items-center gap-2 font-serif text-lg px-6 py-3 rounded-full border border-primary/20 text-primary transition-all hover:border-primary/50"
+        >
+          <Share2 className="h-5 w-5" />
+          Redes Sociales
+        </button>
+
+        {showRedes && (
+          <div className="cuadro text-left rounded-2xl p-8 space-y-3 border border-primary/20">
+            <h2 className="font-serif text-2xl text-primary mb-4 text-center">Redes Sociales</h2>
+            {["Tienda Virtual", "Facebook", "Instagram", "YouTube", "TikTok"].map(r => (
+              <p key={r} className="font-serif text-lg text-muted-foreground">{r}: <span className="italic">Próximamente</span></p>
+            ))}
+            <div className="text-center pt-4">
+              <button onClick={() => setShowRedes(false)} className="cuadro font-serif px-5 py-2 rounded-full border border-primary/20 text-primary text-lg">Cerrar</button>
+            </div>
+          </div>
+        )}
+
         <p className="text-muted-foreground font-serif text-lg">Versículos de la Biblia Reina-Valera 1909 (RVR1909) · Dominio público</p>
 
         {/* Botón de donación */}
