@@ -1,0 +1,29 @@
+import json
+
+categorias = ["Confianza","Dios","Amor","Fe","Esperanza","Perdón","Salvación","Gracia","Paz","Justicia","Sabiduría","Oración","Alabanza","Misericordia","Fortaleza","Humildad","Obediencia","Santificación","Redención","Gloria","Poder","Vida","Luz","Verdad","Juicio","Pecado","Arrepentimiento","Bendición","Profecía","Milagros","Resurrección","Eternidad","Reino","Sacrificio","Paz interior","Esperanza viva","Fe activa","Amor incondicional","Gracia divina","Perdón eterno"]
+
+keywords = {
+    "Confianza":["confia","segur"],"Dios":["dios","señor"],"Amor":["amor","ama"],"Fe":["fe","creer"],"Esperanza":["esperan"],"Perdón":["perdó","perdon"],"Salvación":["salva"],"Gracia":["gracia"],"Paz":["paz"],"Justicia":["justicia"],"Sabiduría":["sabiduría","sabio"],"Oración":["oración","orar"],"Alabanza":["alabanza","alaba"],"Misericordia":["misericordia"],"Fortaleza":["fortaleza","fuerza"],"Humildad":["humildad"],"Obediencia":["obede"],"Santificación":["santi"],"Redención":["redenc"],"Gloria":["gloria"],"Poder":["poder"],"Vida":["vida"],"Luz":["luz"],"Verdad":["verdad"],"Juicio":["juicio"],"Pecado":["pecado"],"Arrepentimiento":["arrepenti"],"Bendición":["bendic"],"Profecía":["profec"],"Milagros":["milagro"],"Resurrección":["resurrec"],"Eternidad":["eterna","eternid"],"Reino":["reino"],"Sacrificio":["sacrificio"],"Paz interior":["paz"],"Esperanza viva":["esperan"],"Fe activa":["fe"],"Amor incondicional":["amor"],"Gracia divina":["gracia"],"Perdón eterno":["perdó","perdon"]
+}
+
+v_todos = []
+res = {c: [] for c in categorias}
+
+for libro in biblia:
+    for n_cap, cap in enumerate(libro["chapters"], 1):
+        for n_ver, texto in enumerate(cap, 1):
+            v_ref = f"{libro['name']} {n_cap}:{n_ver} - {texto}"
+            v_todos.append(v_ref)
+            t_low = texto.lower()
+            for c in categorias:
+                if any(k in t_low for k in keywords.get(c, [])):
+                    res[c].append(v_ref)
+
+for c in categorias:
+    res[c] = list(dict.fromkeys(res[c]))
+    if len(res[c]) < 33:
+        faltan = 33 - len(res[c])
+        otros = [v for v in v_todos if v not in res[c]]
+        res[c].extend(otros[:faltan])
+
+print(json.dumps(res, ensure_ascii=False, indent=2))
