@@ -3,7 +3,7 @@ import { findVerse, randomVerse, type VerseResult } from "@/lib/verse-engine";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Send, Heart, HeartOff, Mic } from "lucide-react";
+import { BookOpen, Send, Heart, HeartOff, Mic, Bell, Volume2 } from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
@@ -11,7 +11,19 @@ export default function Home() {
   const [problem, setProblem] = useState("");
   const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
   const [listening, setListening] = useState(false);
+  const [notif, setNotif] = useState(() => localStorage.getItem("notifActiva") === "true");
   const recogRef = useRef<SpeechRecognition | null>(null);
+
+  const toggleNotif = async () => {
+    const next = !notif;
+    setNotif(next);
+    localStorage.setItem("notifActiva", String(next));
+    if (next && "Notification" in window) {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      if (Notification.permission === "granted")
+        new Notification("Arcángel", { body: "Recibirás un versículo diario a las 9:24 a.m." });
+    }
+  };
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -90,6 +102,25 @@ export default function Home() {
             >
               <Mic className={`h-5 w-5 ${listening ? "text-red-500 animate-pulse" : "text-primary"}`} />
               {listening ? "Escuchando..." : "Mantén para hablar"}
+            </button>
+          </div>
+
+          <div className="flex justify-between gap-3">
+            <button
+              type="button"
+              onClick={toggleNotif}
+              className={`cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border transition-all ${notif ? "border-primary/50 text-primary" : "border-primary/20 text-muted-foreground"}`}
+            >
+              <Bell className="h-3.5 w-3.5" />
+              Versículo del día: <span className="font-bold">{notif ? "ON" : "OFF"}</span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border border-primary/20 text-muted-foreground/50 cursor-not-allowed"
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+              Audio (próximamente)
             </button>
           </div>
 
