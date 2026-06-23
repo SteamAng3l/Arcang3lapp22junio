@@ -58,7 +58,7 @@ export default function Categories() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl bg-background border-primary/20 sm:rounded-3xl p-0 overflow-hidden">
+        <DialogContent className="cuadro max-w-2xl border-primary/20 sm:rounded-3xl p-0 overflow-hidden">
           <div className="p-8 md:p-12 text-center bg-gradient-to-b from-card to-background">
             {activeVerse && (
               <div className="animate-in fade-in zoom-in-95 duration-500">

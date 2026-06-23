@@ -204,6 +204,12 @@
   .bg-background {
     background-color: rgba(255, 255, 255, 0.4) !important;
   }
+  .cuadro {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(2px);
+    border-radius: 8px;
+    padding: 10px;
+  }
   body, p, span, div, h1, h2, h3, h4, h5, h6, a, button, label {
     font-weight: 700;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 1);
