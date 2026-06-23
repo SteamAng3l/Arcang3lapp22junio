@@ -136,25 +136,6 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="flex justify-between gap-3">
-            <button
-              type="button"
-              onClick={toggleNotif}
-              className={`cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border transition-all ${notif ? "border-primary/50 text-primary" : "border-primary/20 text-muted-foreground"}`}
-            >
-              <Bell className="h-3.5 w-3.5" />
-              Versículo del día: <span className="font-bold">{notif ? "ON" : "OFF"}</span>
-            </button>
-            <button
-              type="button"
-              disabled
-              className="cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border border-primary/20 text-muted-foreground/50 cursor-not-allowed"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              Audio (próximamente)
-            </button>
-          </div>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               type="submit"
@@ -242,6 +223,25 @@ export default function Home() {
           </Card>
         </div>
       )}
+
+      <div className="flex justify-between gap-3">
+        <button
+          type="button"
+          onClick={toggleNotif}
+          className={`cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border transition-all ${notif ? "border-primary/50 text-primary" : "border-primary/20 text-muted-foreground"}`}
+        >
+          <Bell className="h-3.5 w-3.5" />
+          Versículo del día: <span className="font-bold">{notif ? "ON" : "OFF"}</span>
+        </button>
+        <button
+          type="button"
+          disabled
+          className="cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border border-primary/20 text-muted-foreground/50 cursor-not-allowed"
+        >
+          <Volume2 className="h-3.5 w-3.5" />
+          Audio (próximamente)
+        </button>
+      </div>
     </div>
   );
 }
