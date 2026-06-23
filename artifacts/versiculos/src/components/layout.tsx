@@ -41,9 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <footer className="mt-16 pt-6 border-t border-border/40 text-center space-y-5">
-        <p className="text-muted-foreground font-serif text-lg">
-          Versículos de la Reina-Valera 1909 · Dominio público
-        </p>
+        <p className="text-muted-foreground font-serif text-lg">Versículos de la Biblia Reina-Valera 1909 (RVR1909) · Dominio público</p>
 
         {/* Botón de donación */}
         <a
