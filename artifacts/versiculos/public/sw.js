@@ -22,6 +22,17 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+self.addEventListener("message", (e) => {
+  if (e.data?.type !== "SCHEDULE_NOTIF") return;
+  const delay = e.data.delay;
+  setTimeout(() => {
+    self.registration.showNotification("Arcángel – Versículo del Día", {
+      body: e.data.verse,
+      icon: "/favicon.svg"
+    });
+  }, delay);
+});
+
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 

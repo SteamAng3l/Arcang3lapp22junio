@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { findVerse, randomVerse, type VerseResult } from "@/lib/verse-engine";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,12 +7,39 @@ import { BookOpen, Send, Heart, HeartOff, Mic, Bell, Volume2 } from "lucide-reac
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
+const scheduleNotif = async () => {
+  if (!("serviceWorker" in navigator) || Notification.permission !== "granted") return;
+  const reg = await navigator.serviceWorker.ready;
+  const searches: string[] = JSON.parse(localStorage.getItem("searches") || "[]");
+  const sent: string[] = JSON.parse(localStorage.getItem("sentVerses") || "[]");
+  const query = searches[Math.floor(Math.random() * searches.length)] || "";
+  let verse = query ? findVerse(query) : randomVerse();
+  if (sent.includes(verse.verse_reference)) verse = randomVerse();
+  sent.push(verse.verse_reference);
+  localStorage.setItem("sentVerses", JSON.stringify(sent.slice(-100)));
+  const now = new Date();
+  const target = new Date(now);
+  target.setHours(9, 24, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const lastDate = localStorage.getItem("lastNotifDate");
+  const today = now.toDateString();
+  if (lastDate === today) return;
+  reg.active?.postMessage({ type: "SCHEDULE_NOTIF", delay: target.getTime() - now.getTime(), verse: `"${verse.verse_text}" — ${verse.verse_reference}` });
+  localStorage.setItem("lastNotifDate", today);
+};
+
 export default function Home() {
   const [problem, setProblem] = useState("");
   const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
   const [listening, setListening] = useState(false);
   const [notif, setNotif] = useState(() => localStorage.getItem("notifActiva") === "true");
   const recogRef = useRef<SpeechRecognition | null>(null);
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+    if (notif && Notification.permission === "granted") scheduleNotif();
+  }, []);
 
   const toggleNotif = async () => {
     const next = !notif;
@@ -20,15 +47,19 @@ export default function Home() {
     localStorage.setItem("notifActiva", String(next));
     if (next && "Notification" in window) {
       if (Notification.permission === "default") await Notification.requestPermission();
-      if (Notification.permission === "granted")
+      if (Notification.permission === "granted") {
         new Notification("Arcángel", { body: "Recibirás un versículo diario a las 9:24 a.m." });
+        scheduleNotif();
+      }
     }
   };
-  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!problem.trim()) return;
+    const searches: string[] = JSON.parse(localStorage.getItem("searches") || "[]");
+    searches.unshift(problem.trim());
+    localStorage.setItem("searches", JSON.stringify(searches.slice(0, 20)));
     setActiveVerse(findVerse(problem.trim()));
   };
 
