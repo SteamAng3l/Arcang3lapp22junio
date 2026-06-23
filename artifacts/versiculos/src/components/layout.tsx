@@ -29,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             Arcángel
           </h1>
         </Link>
-        <p className="text-muted-foreground font-serif italic text-xl max-w-md mx-auto text-center">Guía y Mensajero</p>
+        <p className="text-muted-foreground font-serif italic text-xl max-w-md mx-auto text-center">Guía y Mensajero de la Palabra</p>
 
         <nav className="flex justify-center gap-8 mt-8 flex-wrap" aria-label="Navegación principal">
           {navLink("/", "Inicio")}
