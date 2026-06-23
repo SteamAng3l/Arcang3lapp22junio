@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { findVerse, randomVerse, type VerseResult } from "@/lib/verse-engine";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Send, Heart, HeartOff } from "lucide-react";
+import { BookOpen, Send, Heart, HeartOff, Mic } from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
 export default function Home() {
   const [problem, setProblem] = useState("");
   const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
+  const [listening, setListening] = useState(false);
+  const recogRef = useRef<SpeechRecognition | null>(null);
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,6 +22,29 @@ export default function Home() {
 
   const handleRandom = () => {
     setActiveVerse(randomVerse());
+  };
+
+  const startMic = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    const r = new SR();
+    r.lang = "es-ES";
+    r.continuous = false;
+    r.interimResults = false;
+    r.onresult = (e: SpeechRecognitionEvent) => {
+      const t = e.results[0][0].transcript;
+      setProblem(t);
+      setActiveVerse(findVerse(t));
+    };
+    r.onend = () => setListening(false);
+    recogRef.current = r;
+    r.start();
+    setListening(true);
+  };
+
+  const stopMic = () => {
+    recogRef.current?.stop();
+    setListening(false);
   };
 
   const toggleFavorite = () => {
@@ -53,6 +78,20 @@ export default function Home() {
             className="min-h-[140px] resize-none bg-background/50 border-border focus-visible:ring-primary/30 text-xl p-5 font-serif leading-relaxed"
             data-testid="input-problem"
           />
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onMouseDown={startMic}
+              onMouseUp={stopMic}
+              onTouchStart={startMic}
+              onTouchEnd={stopMic}
+              className={`cuadro flex items-center gap-2 px-6 py-3 text-lg font-serif rounded-full border border-primary/20 transition-all ${listening ? "ring-2 ring-primary scale-105" : ""}`}
+            >
+              <Mic className={`h-5 w-5 ${listening ? "text-red-500 animate-pulse" : "text-primary"}`} />
+              {listening ? "Escuchando..." : "Mantén para hablar"}
+            </button>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
