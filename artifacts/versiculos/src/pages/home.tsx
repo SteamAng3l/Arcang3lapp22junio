@@ -180,11 +180,11 @@ export default function Home() {
             </p>
           </div>
 
-          <Card className="cuadro border-primary/20 shadow-md relative overflow-hidden">
+          <Card className="cuadro border-primary/20 shadow-md relative w-[90%] max-w-[500px] mx-auto max-h-[80vh] overflow-y-auto">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <CardContent className="p-8 md:p-12 text-center">
+            <CardContent className="p-5 md:p-8 text-center">
               <p
-                className="text-2xl md:text-3xl lg:text-4xl font-serif text-foreground leading-relaxed"
+                className="text-lg md:text-2xl font-serif text-foreground leading-relaxed"
                 data-testid="text-verse"
               >
                 "{activeVerse.verse_text}"
