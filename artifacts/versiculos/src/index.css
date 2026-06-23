@@ -204,4 +204,7 @@
   .bg-background {
     background-color: rgba(255, 255, 255, 0.4) !important;
   }
+  body, p, span, div, h1, h2, h3, h4, h5, h6, a, button, label {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  }
 }
