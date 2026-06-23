@@ -179,11 +179,14 @@
     @apply border-border;
   }
   html {
-    font-size: 18px;
+    font-size: calc(18px + 2pt);
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground selection:bg-primary/20;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    @apply font-sans antialiased text-foreground selection:bg-primary/20;
+    background-image: url('/fondo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     line-height: 1.7;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -193,5 +196,12 @@
   /* Accessibility: ensure touch targets are at least 44px tall */
   button, a, [role="button"] {
     min-height: 44px;
+  }
+  .bg-card, [class*="bg-card"] {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(2px);
+  }
+  .bg-background {
+    background-color: rgba(255, 255, 255, 0.4) !important;
   }
 }

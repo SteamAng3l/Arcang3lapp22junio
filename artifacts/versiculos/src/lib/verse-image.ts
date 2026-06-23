@@ -60,14 +60,14 @@ export async function generateVerseImage(verse: VerseResponse): Promise<Blob> {
   canvas.height = SIZE;
   const ctx = canvas.getContext("2d")!;
 
-  // ── Background ──────────────────────────────────────────────────────────
-  const bg = ctx.createLinearGradient(0, 0, 0, SIZE);
-  bg.addColorStop(0, BEIGE_TOP);
-  bg.addColorStop(1, BEIGE_BTM);
-  ctx.fillStyle = bg;
+  const fondo = new Image();
+  fondo.src = "/fondo.jpg";
+  await fondo.decode();
+  ctx.drawImage(fondo, 0, 0, SIZE, SIZE);
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
   ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // Top + bottom amber bars
   ctx.fillStyle = AMBER;
   ctx.fillRect(0, 0, SIZE, 10);
   ctx.fillRect(0, SIZE - 10, SIZE, 10);
