@@ -61,7 +61,7 @@ export async function generateVerseImage(verse: VerseResponse): Promise<Blob> {
   const ctx = canvas.getContext("2d")!;
 
   const fondo = new Image();
-  fondo.src = "/fondo.jpg";
+  fondo.src = "/fondonew4.png";
   await fondo.decode();
   ctx.drawImage(fondo, 0, 0, SIZE, SIZE);
 
