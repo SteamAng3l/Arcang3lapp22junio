@@ -2,7 +2,7 @@ import { useState } from "react";
 import { findVerse, getAllCategories, type VerseResult } from "@/lib/verse-engine";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Heart, HeartOff } from "lucide-react";
+import { Heart, HeartOff, Volume2 } from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
@@ -10,6 +10,17 @@ export default function Categories() {
   const categories = getAllCategories();
   const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+
+  const speak = () => {
+    if (!activeVerse) return;
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    const u = new SpeechSynthesisUtterance(`${activeVerse.verse_text}. ${activeVerse.verse_reference}`);
+    u.lang = "es-ES";
+    u.onend = () => setSpeaking(false);
+    window.speechSynthesis.speak(u);
+    setSpeaking(true);
+  };
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   const handleCategoryClick = (label: string) => {
@@ -68,11 +79,20 @@ export default function Categories() {
                 </span>
 
                 <p
-                  className="text-2xl md:text-3xl font-serif text-foreground leading-relaxed mb-8"
+                  className="text-2xl md:text-3xl font-serif text-foreground leading-relaxed mb-4"
                   data-testid="modal-verse-text"
                 >
                   "{activeVerse.verse_text}"
                 </p>
+
+                <button
+                  type="button"
+                  onClick={speak}
+                  className={`mb-6 cuadro inline-flex items-center gap-1.5 px-4 py-2 text-sm font-serif rounded-full border border-primary/20 transition-all ${speaking ? "text-primary border-primary/50" : "text-muted-foreground"}`}
+                >
+                  <Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse text-primary" : ""}`} />
+                  {speaking ? "Detener" : "Escuchar"}
+                </button>
 
                 <div className="pt-6 border-t border-border/50 flex flex-col items-center gap-6">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full">
