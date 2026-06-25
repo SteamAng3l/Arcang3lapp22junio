@@ -7,25 +7,29 @@ import { BookOpen, Send, Heart, HeartOff, Mic, Bell, Volume2 } from "lucide-reac
 import { useFavorites } from "@/hooks/use-favorites";
 import { VerseShareButtons } from "@/components/verse-share-buttons";
 
-const scheduleNotif = async () => {
-  if (!("serviceWorker" in navigator) || Notification.permission !== "granted") return;
-  const reg = await navigator.serviceWorker.ready;
-  const searches: string[] = JSON.parse(localStorage.getItem("searches") || "[]");
-  const sent: string[] = JSON.parse(localStorage.getItem("sentVerses") || "[]");
-  const query = searches[Math.floor(Math.random() * searches.length)] || "";
-  let verse = query ? findVerse(query) : randomVerse();
-  if (sent.includes(verse.verse_reference)) verse = randomVerse();
-  sent.push(verse.verse_reference);
-  localStorage.setItem("sentVerses", JSON.stringify(sent.slice(-100)));
+const scheduleNotif = () => {
+  if (Notification.permission !== "granted") return;
   const now = new Date();
+  if (localStorage.getItem("lastNotifDate") === now.toDateString()) return;
   const target = new Date(now);
   target.setHours(9, 24, 0, 0);
   if (target <= now) target.setDate(target.getDate() + 1);
-  const lastDate = localStorage.getItem("lastNotifDate");
-  const today = now.toDateString();
-  if (lastDate === today) return;
-  reg.active?.postMessage({ type: "SCHEDULE_NOTIF", delay: target.getTime() - now.getTime(), verse: `"${verse.verse_text}" — ${verse.verse_reference}` });
-  localStorage.setItem("lastNotifDate", today);
+  setTimeout(() => {
+    const searches: string[] = JSON.parse(localStorage.getItem("searches") || "[]");
+    const sent: string[] = JSON.parse(localStorage.getItem("sentVerses") || "[]");
+    const query = searches[Math.floor(Math.random() * searches.length)] || "";
+    let verse = query ? findVerse(query) : randomVerse();
+    if (sent.includes(verse.verse_reference)) verse = randomVerse();
+    const fecha = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long" });
+    new Notification(`Versículo del Día – ${fecha}`, {
+      body: `"${verse.verse_text}" — ${verse.verse_reference}`,
+      icon: "/favicon.svg"
+    });
+    sent.push(verse.verse_reference);
+    localStorage.setItem("sentVerses", JSON.stringify(sent.slice(-100)));
+    localStorage.setItem("lastNotifDate", new Date().toDateString());
+    scheduleNotif();
+  }, target.getTime() - now.getTime());
 };
 
 export default function Home() {
