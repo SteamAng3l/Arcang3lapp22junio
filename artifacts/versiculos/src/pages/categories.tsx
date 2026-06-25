@@ -42,6 +42,7 @@ export default function Categories() {
           <button
             key={cat.id}
             onClick={() => handleCategoryClick(cat.label)}
+            aria-label={`Ver versículo de ${cat.label}`}
             className="text-left group relative overflow-hidden bg-card hover:bg-primary/5 border border-border/50 hover:border-primary/30 rounded-2xl p-7 transition-all duration-300 hover:shadow-sm"
             data-testid={`button-category-${cat.id}`}
           >

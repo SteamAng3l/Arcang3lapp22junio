@@ -1,10 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Heart, Share2 } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [showRedes, setShowRedes] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if ((e.key === "Enter" || e.key === " ") && el.getAttribute("role") === "button") {
+        e.preventDefault();
+        el.click();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   const navLink = (href: string, label: string) => {
     const active = location === href;
