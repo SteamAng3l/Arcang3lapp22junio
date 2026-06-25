@@ -23,10 +23,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return (
       <Link href={href}>
         <span
-          className={`cursor-pointer transition-colors hover:text-primary text-xl font-serif px-1 pb-0.5 ${
+          className={`cursor-pointer text-xl font-serif px-5 py-2 rounded-full transition-all ${
             active
-              ? "text-primary border-b-2 border-primary/40"
-              : "text-muted-foreground"
+              ? "bg-[#1a1a1a] text-white"
+              : "bg-[#1a1a1a] text-white opacity-70 hover:opacity-100"
           }`}
         >
           {label}
