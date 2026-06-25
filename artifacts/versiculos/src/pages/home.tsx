@@ -204,6 +204,14 @@ export default function Home() {
               >
                 "{activeVerse.verse_text}"
               </p>
+              <button
+                type="button"
+                onClick={speak}
+                className={`mt-4 cuadro inline-flex items-center gap-1.5 px-4 py-2 text-sm font-serif rounded-full border border-primary/20 transition-all ${speaking ? "text-primary border-primary/50" : "text-muted-foreground"}`}
+              >
+                <Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse text-primary" : ""}`} />
+                {speaking ? "Detener" : "Escuchar"}
+              </button>
               <div className="mt-8 pt-8 border-t border-border/50 flex flex-col items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full">
                   <span
