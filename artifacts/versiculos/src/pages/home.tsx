@@ -33,7 +33,18 @@ export default function Home() {
   const [activeVerse, setActiveVerse] = useState<VerseResult | null>(null);
   const [listening, setListening] = useState(false);
   const [notif, setNotif] = useState(() => localStorage.getItem("notifActiva") === "true");
+  const [speaking, setSpeaking] = useState(false);
   const recogRef = useRef<SpeechRecognition | null>(null);
+
+  const speak = () => {
+    if (!activeVerse) return;
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    const u = new SpeechSynthesisUtterance(`${activeVerse.verse_text}. ${activeVerse.verse_reference}`);
+    u.lang = "es-ES";
+    u.onend = () => setSpeaking(false);
+    window.speechSynthesis.speak(u);
+    setSpeaking(true);
+  };
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
@@ -235,11 +246,12 @@ export default function Home() {
         </button>
         <button
           type="button"
-          disabled
-          className="cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border border-primary/20 text-muted-foreground/50 cursor-not-allowed"
+          onClick={speak}
+          disabled={!activeVerse}
+          className={`cuadro flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-serif rounded-2xl border transition-all ${speaking ? "border-primary/50 text-primary" : "border-primary/20 text-muted-foreground"} ${!activeVerse ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          <Volume2 className="h-3.5 w-3.5" />
-          Audio (próximamente)
+          <Volume2 className={`h-3.5 w-3.5 ${speaking ? "animate-pulse" : ""}`} />
+          {speaking ? "Detener" : "Escuchar versículo"}
         </button>
       </div>
     </div>

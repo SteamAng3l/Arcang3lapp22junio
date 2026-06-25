@@ -22,6 +22,11 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+self.addEventListener("push", (e) => {
+  const d = e.data?.json() ?? {};
+  e.waitUntil(self.registration.showNotification(d.title || "Arcángel", { body: d.body }));
+});
+
 self.addEventListener("message", (e) => {
   if (e.data?.type !== "SCHEDULE_NOTIF") return;
   const delay = e.data.delay;
