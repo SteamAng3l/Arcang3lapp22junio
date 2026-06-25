@@ -183,7 +183,7 @@
   }
   body {
     @apply font-sans antialiased text-foreground selection:bg-primary/20;
-    background-image: url('/fondonew2.png');
+    background-image: url('/fondo.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
